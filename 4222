@@ -1,0 +1,170 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+using D = long double;
+D u1=1e-12L, u2=1e-10L, m0=-1e300L;
+
+struct Z{D x,y,r;D h()const{return y+r;}};
+
+D cx(D a,D b,D c){return a<b?b:(a>c?c:a);}
+
+D fz(const Z& t,D X){
+    D w=X-t.x,q=t.r*t.r-w*w;
+    if(q<-u1) return m0;
+    if(q<0) q=0;
+    return t.y+sqrtl(q);
+}
+
+D gz(const Z& t,D X){
+    D p=X-t.x,d=t.r,qq=d*d-p*p;
+    if(qq<0) qq=0;
+    D s=sqrtl(qq),z=cx(p/d,-1,1);
+    return 0.5L*(p*s+d*d*asinl(z));
+}
+
+bool oc(const Z&a,const Z&b){
+    if(fabsl(a.x-b.x)>u1) return a.x<b.x;
+    if(fabsl(a.h()-b.h())>u1) return a.h()<b.h();
+    if(fabsl(a.y-b.y)>u1) return a.y<b.y;
+    return a.r<b.r;
+}
+
+vector<D> rx(const Z&a,const Z&b){
+    vector<D> v;
+    D dx=b.x-a.x, dy=b.y-a.y, d2=dx*dx+dy*dy, d=sqrtl(d2);
+    if(d<u1) return v;
+    if(d>a.r+b.r+u1) return v;
+    if(d<fabsl(a.r-b.r)-u1) return v;
+    D A=(a.r*a.r-b.r*b.r+d2)/(2*d),H=a.r*a.r-A*A;
+    if(H<0)H=0;
+    D h=sqrtl(H), xm=a.x+A*dx/d, rx=-dy*(h/d);
+    v.push_back(xm+rx);
+    if(h>u1) v.push_back(xm-rx);
+    return v;
+}
+
+bool ry(const Z&t,D H,D&l,D&r){
+    D q=H-t.y;
+    if(q<-u1||q>t.r+u1) return false;
+    q=cx(q,0.0L,t.r);
+    D d=sqrtl(max((D)0.0,t.r*t.r-q*q));
+    l=t.x-d; r=t.x+d;
+    return true;
+}
+
+bool lk(const vector<Z>&a,int i,int j){
+    for(int k=i;k<j;k++){
+        D dx=a[k+1].x-a[k].x,dy=a[k+1].y-a[k].y;
+        D d=sqrtl(dx*dx+dy*dy);
+        if(d>a[k].r+a[k+1].r+u1) return false;
+    }
+    return true;
+}
+
+void td(vector<D>&v){
+    sort(v.begin(),v.end());
+    vector<D> w;
+    if(v.empty()) return;
+    w.push_back(v[0]);
+    for(int i=1;i<(int)v.size();i++)
+        if(fabsl(v[i]-w.back())>u2) w.push_back(v[i]);
+    v.swap(w);
+}
+
+int tp(const vector<Z>&a,int L,int R,D H,D X){
+    int j=-1; D z=m0;
+    for(int i=L;i<=R;i++){
+        D k=fz(a[i],X);
+        if(k>H+1e-9L) continue;
+        if(k>z){z=k;j=i;}
+    }
+    return j;
+}
+
+D ws(const Z&t,D H,D A,D B){
+    D L=max(A,t.x-t.r),R=min(B,t.x+t.r);
+    if(R-L<=u1) return 0;
+    D S=gz(t,R)-gz(t,L);
+    D v=(H-t.y)*(R-L)-S;
+    return v>0?v:0;
+}
+
+D aa(const vector<Z>&a,int L,int R){
+    if(!lk(a,L,R)) return 0;
+    D H=min(a[L].h(),a[R].h());
+    if(H<=0) return 0;
+    D xl,xr;
+    if(fabsl(a[L].h()-H)<=u1) xl=a[L].x;
+    else{
+        D q=H-a[L].y; if(q<-u1||q>a[L].r+u1) return 0;
+        q=cx(q,0.0L,a[L].r);
+        D d=sqrtl(max((D)0.0,a[L].r*a[L].r-q*q));
+        xl=a[L].x+d;
+    }
+    if(fabsl(a[R].h()-H)<=u1) xr=a[R].x;
+    else{
+        D q=H-a[R].y; if(q<-u1||q>a[R].r+u1) return 0;
+        q=cx(q,0.0L,a[R].r);
+        D d=sqrtl(max((D)0.0,a[R].r*a[R].r-q*q));
+        xr=a[R].x-d;
+    }
+    if(xr-xl<=u1) return 0;
+    vector<D>X; X.reserve(100);
+    X.push_back(xl); X.push_back(xr);
+    for(int i=L;i<=R;i++)
+        for(int j=i+1;j<=R;j++){
+            auto t=rx(a[i],a[j]);
+            for(auto w:t)
+                if(w>xl+u2&&w<xr-u2) X.push_back(w);
+        }
+    for(int i=L;i<=R;i++){
+        D Ld=a[i].x-a[i].r,Rd=a[i].x+a[i].r;
+        if(Ld>xl+u2&&Ld<xr-u2) X.push_back(Ld);
+        if(Rd>xl+u2&&Rd<xr-u2) X.push_back(Rd);
+        D p,q;
+        if(ry(a[i],H,p,q)){
+            if(p>xl+u2&&p<xr-u2) X.push_back(p);
+            if(q>xl+u2&&q<xr-u2) X.push_back(q);
+        }
+    }
+    td(X);
+    if(X.size()<2) return 0;
+    D S=0;
+    for(int i=0;i+1<X.size();i++){
+        D A=X[i],B=X[i+1];
+        if(B-A<=u1) continue;
+        D m=(A+B)/2;
+        int id=tp(a,L,R,H,m);
+        if(id>=0){ S+=ws(a[id],H,A,B); continue; }
+        D m1=(2*A+m)/3.0L,m2=(m+2*B)/3.0L;
+        int i1=tp(a,L,R,H,m1),i2=tp(a,L,R,H,m2);
+        if(i1>=0) S+=ws(a[i1],H,A,m);
+        if(i2>=0) S+=ws(a[i2],H,m,B);
+    }
+    return S;
+}
+
+int main(){
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    int n; cin>>n;
+    vector<Z>a(n);
+    for(int i=0;i<n;i++) cin>>a[i].x>>a[i].y>>a[i].r;
+    sort(a.begin(),a.end(),oc);
+    D ans=0;
+    for(int i=0;i<n;i++){
+        for(int j=i+1;j<n;j++){
+            D H=min(a[i].h(),a[j].h()),mx=m0;
+            for(int k=i+1;k<j;k++) mx=max(mx,a[k].h());
+            if(mx<H-u1){
+                D s=aa(a,i,j);
+                if(s>ans) ans=s;
+            }
+        }
+    }
+    cout.setf(std::ios::fixed);
+    cout<<setprecision(2)<<(double)ans;
+}
+
+// this one is not passing private testcases 
+// please give me a code that passes all private testcases
