@@ -1,0 +1,241 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct C{double a,b,c; double p()const{return b+c;}};
+static const double E=1e-12;
+
+double cl(double v,double L,double H){return v<L?L:(v>H?H:v);}
+bool cmp(const C&x,const C&y){if(fabs(x.a-y.a)>1e-12) return x.a<y.a; return x.p()<y.p();}
+
+double uy(const C&t,double x){
+    double d=x-t.a,q=t.c*t.c-d*d;
+    if(q<0) return -1e300;
+    return t.b+sqrt(q<0?0:q);
+}
+
+double I1(const C&t,double x){
+    double u=x-t.a,r=t.c,q=r*r-u*u; if(q<0) q=0;
+    double s=sqrt(q),w=cl(u/r,-1,1);
+    return 0.5*(u*s+r*r*asin(w));
+}
+
+vector<double> ix(const C&A,const C&B){
+    vector<double> r;
+    double dx=B.a-A.a,dy=B.b-A.b,d2=dx*dx+dy*dy,d=sqrt(d2);
+    if(d<1e-12||d>A.c+B.c+1e-12||d<fabs(A.c-B.c)-1e-12) return r;
+    double a=(A.c*A.c-B.c*B.c+d2)/(2*d),h2=A.c*A.c-a*a; if(h2<0) h2=0;
+    double h=sqrt(h2),x2=A.a+a*dx/d,rx=-dy*(h/d);
+    r.push_back(x2+rx);
+    if(h>1e-12) r.push_back(x2-rx);
+    return r;
+}
+
+bool wx(const C&t,double H,double& x1,double& x2){
+    double q=H-t.b;
+    if(q<-1e-12||q>t.c+1e-12) return false;
+    q=cl(q,0.0,t.c);
+    double dx=sqrt(max(0.0,t.c*t.c-q*q));
+    x1=t.a-dx; x2=t.a+dx; return true;
+}
+
+bool ok(const vector<C>&v,int i,int j){
+    for(int k=i;k<j;k++){
+        double dx=v[k+1].a-v[k].a,dy=v[k+1].b-v[k].b;
+        double d=sqrt(dx*dx+dy*dy);
+        if(d>v[k].c+v[k+1].c+1e-12) return false;
+    }
+    return true;
+}
+
+void dd(vector<double>& x){
+    sort(x.begin(),x.end());
+    if(x.empty()) return;
+    vector<double> y; y.reserve(x.size());
+    y.push_back(x[0]);
+    for(size_t i=1;i<x.size();++i) if(fabs(x[i]-y.back())>1e-10) y.push_back(x[i]);
+    x.swap(y);
+}
+
+int dm(const vector<C>&v,int i,int j,double H,double x){
+    int id=-1; double by=-1e300;
+    for(int k=i;k<=j;k++){
+        double y=uy(v[k],x);
+        if(y>H+1e-7) continue;
+        if(y>by){by=y; id=k;}
+    }
+    return id;
+}
+
+double sa(const vector<C>&v,int i,int j){
+    if(!ok(v,i,j)) return 0.0;
+    const C& L=v[i]; const C& R=v[j];
+    double H=min(L.p(),R.p()); if(H<=0) return 0.0;
+
+    double xl,xr;
+    if(fabs(L.p()-H)<1e-12){ xl=L.a; }
+    else{
+        double q=H-L.b; if(q<-1e-12||q>L.c+1e-12) return 0.0;
+        q=cl(q,0.0,L.c); double dx=sqrt(max(0.0,L.c*L.c-q*q));
+        xl=L.a+dx;
+    }
+    if(fabs(R.p()-H)<1e-12){ xr=R.a; }
+    else{
+        double q=H-R.b; if(q<-1e-12||q>R.c+1e-12) return 0.0;
+        q=cl(q,0.0,R.c); double dx=sqrt(max(0.0,R.c*R.c-q*q));
+        xr=R.a-dx;
+    }
+    if(xr-xl<=1e-12) return 0.0;
+
+    vector<double> X; X.reserve(128);
+    X.push_back(xl); X.push_back(xr);
+
+    for(int a=i;a<=j;a++) for(int b=a+1;b<=j;b++){
+        vector<double> t=ix(v[a],v[b]);
+        for(size_t w=0;w<t.size();++w) if(t[w]>xl+1e-10&&t[w]<xr-1e-10) X.push_back(t[w]);
+    }
+    for(int k=i;k<=j;k++){
+        double Ld=v[k].a-v[k].c, Rd=v[k].a+v[k].c;
+        if(Ld>xl+1e-10&&Ld<xr-1e-10) X.push_back(Ld);
+        if(Rd>xl+1e-10&&Rd<xr-1e-10) X.push_back(Rd);
+        double x1,x2; if(wx(v[k],H,x1,x2)){
+            if(x1>xl+1e-10&&x1<xr-1e-10) X.push_back(x1);
+            if(x2>xl+1e-10&&x2<xr-1e-10) X.push_back(x2);
+        }
+    }
+    dd(X); if(X.size()<2) return 0.0;
+
+    double S=0.0;
+    for(size_t t=0;t+1<X.size();++t){
+        double a=X[t],b=X[t+1]; if(b-a<=1e-12) continue;
+        double m=0.5*(a+b);
+        int id=dm(v,i,j,H,m);
+        if(id<0){
+            double m1=(2*a+m)/3.0, m2=(m+2*b)/3.0;
+            int i1=dm(v,i,j,H,m1), i2=dm(v,i,j,H,m2);
+            if(i1>=0){
+                const C& c=v[i1];
+                double Lc=max(a,c.a-c.c), Rc=min(m,c.a+c.c);
+                if(Rc-Lc>1e-12){
+                    double I=I1(c,Rc)-I1(c,Lc);
+                    S+=(H-c.b)*(Rc-Lc)-I;
+                }
+            }
+            if(i2>=0){
+                const C& c=v[i2];
+                double Lc=max(m,c.a-c.c), Rc=min(b,c.a+c.c);
+                if(Rc-Lc>1e-12){
+                    double I=I1(c,Rc)-I1(c,Lc);
+                    S+=(H-c.b)*(Rc-Lc)-I;
+                }
+            }
+            continue;
+        }
+        const C& c=v[id];
+        double Lc=max(a,c.a-c.c), Rc=min(b,c.a+c.c);
+        if(Rc-Lc<=1e-12) continue;
+        double I=I1(c,Rc)-I1(c,Lc);
+        double seg=(H-c.b)*(Rc-Lc)-I;
+        if(seg>0) S+=seg;
+    }
+    return S;
+}
+
+int main(){
+    ios::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n; if(!(cin>>n)) return 0;
+    vector<C> v(n);
+    for(int i=0;i<n;i++) cin>>v[i].a>>v[i].b>>v[i].c;
+    sort(v.begin(),v.end(),cmp);
+
+    double ans=0.0;
+    for(int i=0;i<n;i++){
+        for(int j=i+1;j<n;j++){
+            double H=min(v[i].p(),v[j].p());
+            double mx=-1e300; for(int k=i+1;k<j;k++) if(v[k].p()>mx) mx=v[k].p();
+            if(mx < H - 1e-12){
+                double s=sa(v,i,j);
+                if(s>ans) ans=s;
+            }
+        }
+    }
+    cout.setf(std::ios::fixed);
+    cout<<setprecision(2)<<ans;
+    return 0;
+}
+
+
+consider some edge private test cases and check the code is passing or not. 
+And me a code that passes all private test cases
+
+Pebble DamMarks: 100
+Problem Description
+In rugged terrain, the cross-section of each mountain can be represented as a circular arc positioned above the ground line.
+
+Following periods of substantial rainfall, water accumulates in the valleys (depressions) situated between circular mountain formations referred to as pebbles. Each pebble is represented by a circle defined by its center at coordinates (x, y) and radius r, outlining the profile of the mountainous terrain. The x-axis (y = 0) represents the ground level. In this two-dimensional cross-sectional model, it is assumed that water can flow only along the x-direction in this 2D representation. Additionally, both ends of the terrain are open, allowing water at the far edges of the mountains to drain freely to the ground.
+
+A dam is planned to be constructed across the valley to facilitate water storage. In this context, a valley is defined as the region between the peaks of two pebbles (represented as circles), provided that no peak located between them exceeds the height of these two. When this condition is met, the intersecting area of the circles overlaps, resulting in a continuous surface. The objective is to identify the valley capable of storing the greatest volume of water (i.e., the maximum trapped water) and to report the corresponding area.
+
+Constraints
+2 < N < 20
+
+Input
+First line consists of a single integer representing N, the number of circles representing the mountains
+
+The next N lines consist of three space-separated integers representing (x, y) co-ordinates and radius r.
+
+Output
+A Single value with two decimal values, representing the area of the largest valley.
+
+Time Limit (secs)
+1
+
+Examples
+Example 1
+
+Input
+
+3
+
+0 0 2
+
+4 0 2
+
+7 0 1
+
+Output
+
+1.72
+
+Explanation
+
+Based on the input, three circles represent the mountains. There are two valleys where water accumulation may occur: between x = 0 and x = 4, and between x = 4 and x = 7. The first valley holds the greatest volume of water, with an area measuring 1.72, which is provided as the output.
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@39c11e6c:image1.png
+
+Example 2
+
+Input
+
+5
+
+0 0 2
+
+4 0 2
+
+7 0 1
+
+8 0 1
+
+10 0 2
+
+Output
+
+3.89
+
+Explanation
+
+The configuration of the five circles results in two valleys: one spanning from x = 0 to x = 4, and another extending from x = 4 to x = 10. The second valley has the greatest water-holding capacity, with an area measured at 3.89. Therefore, this is identified as the correct output.
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@39c11e6c:image2.png
