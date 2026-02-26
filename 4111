@@ -1,0 +1,162 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Circle {
+    double x, y, r;
+    double top() const { return y + r; }
+};
+
+const double EPS = 1e-9;
+
+double upperY(const Circle &c, double px) {
+    double dx = px - c.x;
+    if (fabs(dx) > c.r) return -1e18;
+    return c.y + sqrt(max(0.0, c.r*c.r - dx*dx));
+}
+
+double maxSurface(const vector<Circle>& v, int i, int j, double px) {
+    double best = -1e18;
+    for (int k = i; k <= j; k++) {
+        best = max(best, upperY(v[k], px));
+    }
+    return best;
+}
+
+double integrate(const vector<Circle>& v, int i, int j,
+                 double L, double R, double H) {
+
+    int STEPS = 5000;  // high precision
+    double dx = (R - L) / STEPS;
+    double area = 0.0;
+
+    for (int s = 0; s < STEPS; s++) {
+        double x1 = L + s * dx;
+        double x2 = x1 + dx;
+        double mid = (x1 + x2) / 2.0;
+
+        double surface = maxSurface(v, i, j, mid);
+        if (surface < H) {
+            area += (H - surface) * dx;
+        }
+    }
+
+    return area;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int N;
+    cin >> N;
+
+    vector<Circle> v(N);
+    for (int i = 0; i < N; i++)
+        cin >> v[i].x >> v[i].y >> v[i].r;
+
+    sort(v.begin(), v.end(),
+         [](const Circle &a, const Circle &b) {
+             if (fabs(a.x - b.x) > EPS)
+                 return a.x < b.x;
+             return a.top() < b.top();
+         });
+
+    double ans = 0.0;
+
+    for (int i = 0; i < N; i++) {
+        for (int j = i + 1; j < N; j++) {
+
+            double H = min(v[i].top(), v[j].top());
+
+            double maxMid = -1e18;
+            for (int k = i + 1; k < j; k++)
+                maxMid = max(maxMid, v[k].top());
+
+            if (maxMid >= H - EPS)
+                continue;
+
+            double L = v[i].x;
+            double R = v[j].x;
+
+            if (R - L <= EPS) continue;
+
+            double area = integrate(v, i, j, L, R, H);
+            ans = max(ans, area);
+        }
+    }
+
+    cout << fixed << setprecision(2) << ans << "\n";
+    return 0;
+}
+
+consider some edge private test cases and check the code is passing or not. 
+And me a code that passes all private test cases
+
+Pebble DamMarks: 100
+Problem Description
+In rugged terrain, the cross-section of each mountain can be represented as a circular arc positioned above the ground line.
+
+Following periods of substantial rainfall, water accumulates in the valleys (depressions) situated between circular mountain formations referred to as pebbles. Each pebble is represented by a circle defined by its center at coordinates (x, y) and radius r, outlining the profile of the mountainous terrain. The x-axis (y = 0) represents the ground level. In this two-dimensional cross-sectional model, it is assumed that water can flow only along the x-direction in this 2D representation. Additionally, both ends of the terrain are open, allowing water at the far edges of the mountains to drain freely to the ground.
+
+A dam is planned to be constructed across the valley to facilitate water storage. In this context, a valley is defined as the region between the peaks of two pebbles (represented as circles), provided that no peak located between them exceeds the height of these two. When this condition is met, the intersecting area of the circles overlaps, resulting in a continuous surface. The objective is to identify the valley capable of storing the greatest volume of water (i.e., the maximum trapped water) and to report the corresponding area.
+
+Constraints
+2 < N < 20
+
+Input
+First line consists of a single integer representing N, the number of circles representing the mountains
+
+The next N lines consist of three space-separated integers representing (x, y) co-ordinates and radius r.
+
+Output
+A Single value with two decimal values, representing the area of the largest valley.
+
+Time Limit (secs)
+1
+
+Examples
+Example 1
+
+Input
+
+3
+
+0 0 2
+
+4 0 2
+
+7 0 1
+
+Output
+
+1.72
+
+Explanation
+
+Based on the input, three circles represent the mountains. There are two valleys where water accumulation may occur: between x = 0 and x = 4, and between x = 4 and x = 7. The first valley holds the greatest volume of water, with an area measuring 1.72, which is provided as the output.
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@39c11e6c:image1.png
+
+Example 2
+
+Input
+
+5
+
+0 0 2
+
+4 0 2
+
+7 0 1
+
+8 0 1
+
+10 0 2
+
+Output
+
+3.89
+
+Explanation
+
+The configuration of the five circles results in two valleys: one spanning from x = 0 to x = 4, and another extending from x = 4 to x = 10. The second valley has the greatest water-holding capacity, with an area measured at 3.89. Therefore, this is identified as the correct output.
