@@ -1,0 +1,191 @@
+Segmented AlgebraMarks: 100
+Problem Description
+Vivek is working with a malfunctioning custom nice-segment display in which some segments are permanently fixed, while others are electronically linked, causing a toggle in one segment to automatically affect its connected counterparts.
+
+You are given a mathematical equation represented using nice-segment characters, and you may toggle exactly one segment in the entire expression to maximize the resulting value.
+
+Each digit is displayed as a 3×3 character matrix. An underscore (_) or a vertical bar (|) represents an active LED segment, while a blank space indicates an inactive one. The matrix positions are labeled A through I, arranged row by row from the top-left corner.
+
+Hardware malfunctions include the following:
+
+Stuck Segments: Some segments are permanently fixed and cannot be modified. A segment stuck OFF cannot be turned ON, and a segment stuck ON cannot be turned OFF.
+Neighborhood Effect (Linked Segments): Some segments within a digit are electrically linked, meaning toggling any one of them automatically toggles the entire group, but the action still counts as a single toggle. For example, if segments A and B are linked and A is ON while B is OFF, toggling A will flip both states i.e., A will turn OFF and B will turn ON. In short, all linked segments invert their current state together.
+Validity Rule: A toggle is considered valid only if:
+It does not violate any stuck-segment constraints.
+After all linked segments are toggled, the resulting pattern corresponds to a valid digit (0 - 9), operator (+, -, *, /), or bracket ([ or ]).
+If a set of linked segments includes a fixed segment, the set cannot be toggled, since the fixed segment cannot be altered.
+The custom nine-segment display format is illustrated below.
+
+Numbers -
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@c7a977f:image1.pngcom.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@c7a977f:image2.png
+
+Fig.1
+
+Operators -
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@c7a977f:image3.png
+
+Fig.2
+
+Brackets -
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@c7a977f:image4.png
+
+Fig.3
+
+Determine the maximum possible value of the given mathematical expression, where each symbol is represented using a nine-segment matrix format. Determine the maximum possible value the expression can reach by performing exactly one 'toggle'. You are required to evaluate the equation basis on the given custom operator precedence.
+
+Constraints
+3 <= Number of characters in the provided equation <= 50
+
+1 <= F + L <= 10
+
+The equation is said to be valid only if all the operands are positive, thus result will never be negative.
+
+Input
+First line consists of an integer N denoting the number of characters in the given equation.
+
+Next three lines consist of the nine-segment display of the equation.
+
+Next line consists of a string denoting the priority order of the operators where the operators appearing earlier are assigned higher priority than those that follow.
+
+Next line consists of an integer F denoting the number of fixed segments.
+
+Next F lines consist of the position and segment letters that are fixed and cannot be changed. For example, 1AB indicates that the segments A and B in the first digit are fixed. Indexing is 1 basis.
+
+Next line consists of an integer L denoting the number of linked groups.
+
+Next L lines consist of the position and segment letters that must toggle together as a unit. For example, 1AB indicates that the segments A and B in the first digit are linked and toggling one will toggle the other too. Indexing is 1 basis.
+
+Output
+A single integer indicating the maximum value the equation can achieve through exactly one valid segment toggle.
+
+Time Limit (secs)
+1
+
+Examples
+Example 1
+
+Input
+
+5
+
+
+              
+
+  | _|| ||_||_|
+
+  |  || ||_|| |
+
++-*/
+
+3
+
+3A
+
+4B
+
+5C
+
+2
+
+2AB
+
+1GD
+
+Output
+
+5336
+
+Explanation
+
+Given equation is
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@c7a977f:image5.png
+
+which is 6+7 * 8
+
+By toggling segment 2E, the original equation 6+7 * 8 is changed to 667 * 8. This valid move results in a value of 5336, which is the highest possible outcome following the given fixed and linked rules.
+
+Example 2
+
+Input
+
+11
+
+        _      _   _               _ 
+
+|_||_|   | _|| | _|| | _|  ||_|| |
+
+| ||_| _|  || | _|| |  |  ||_||_|
+
+/+-*
+
+2
+
+6HA
+
+2D
+
+2
+
+6HEB
+
+7AB
+
+Output
+
+5496
+
+Explanation
+
+Given equation is
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@c7a977f:image6.png
+
+which is 8*1+9/7+6*5
+
+By toggling segment 10H, the original equation 8*1+9/7+6*5 is changed to 8*1+9/7+685. This valid move results in a value of 5496, which is the highest possible outcome following the given fixed and linked rules.
+
+Example 3
+
+Input
+
+3
+
+ _     _  
+
+  | _| _|
+
+ _|  |  |
+
++-*/
+
+1
+
+2EB
+
+1
+
+1BH
+
+Output
+
+9
+
+Explanation
+
+Given equation is
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@c7a977f:image7.png
+
+which is 1+3.
+
+By toggling the B segment in the first digit, the H segment will also be toggled. As a result, the equation becomes 6 + 3, which equals 9, the maximum possible value.
+
+make funct, calculation part up and down to look like a hurry , busy low level coding knowledge man rewrite this code.
+
+use small variable and function name, change structure of code.
+
+remove comments and modify this code that anyone can't find that i have copied in c++
