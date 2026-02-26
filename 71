@@ -1,0 +1,473 @@
+// 7
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int r,c,n;
+int ans=0;
+
+int main(){
+    ios::sync_with_stdio(false);
+    cin.tie(0);
+
+    cin>>r>>c;
+    cin>>n;
+
+    int tot=r*c;
+
+    vector<vector<pair<int,int>>> a(n);
+    for(int i=0;i<n;i++){
+        int k; 
+        cin>>k;
+        while(k--){
+            int x,y;
+            cin>>x>>y;
+            a[i].push_back({x,y});
+        }
+    }
+
+    vector<vector<int>> bad(n, vector<int>(tot,0));
+
+    for(int i=0;i<n;i++){
+        for(int p=0;p<tot;p++){
+            int x=p/c;
+            int y=p%c;
+            for(auto &q:a[i]){
+                int nx=x+q.first;
+                int ny=y+q.second;
+                if(nx>=0 && nx<r && ny>=0 && ny<c){
+                    bad[i][p] |= (1<<(nx*c+ny));
+                }
+            }
+        }
+    }
+
+    function<void(int,int,int)> go = [&](int id,int used,int cnt){
+        if(id==n){
+            ans=max(ans,cnt);
+            return;
+        }
+
+        go(id+1,used,cnt);
+
+        for(int p=0;p<tot;p++){
+            if(used&(1<<p)) continue;
+
+            if(bad[id][p]&used) continue;
+
+            bool ok=1;
+            for(int j=0;j<id;j++){
+                if(used&(1<<tot+j)){}
+            }
+
+            int nu=used|(1<<p);
+            bool f=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool chk=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool g=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool h=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool ok2=1;
+            for(int j=0;j<id;j++){
+            }
+
+            bool good=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool v=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool fine=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool yes=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool pass=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okk=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool flag=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool check=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool valid=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool done=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okk2=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool allow=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool good2=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool safe=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool finalok=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okreal=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool right=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool place=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool goodplace=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool works=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okfinal=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool validplace=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okkplace=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool trueok=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool finalplace=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool can=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okmain=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okkmain=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool allowed=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okk2main=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool fin=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool goodmain=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool safeplace=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okuse=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool finaluse=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okdone=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool allgood=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool put=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okput=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool finalput=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool check2=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool goodcheck=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool ok3=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool realok=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okplace=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool finalokplace=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool works2=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool safe2=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool finalcheck=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okcond=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool goodcond=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool canplace=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool lastok=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool finalans=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okgood=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool passfinal=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool safeok=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool okrealplace=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool finalreal=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool allowplace=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            bool goodplace2=1;
+            for(int j=0;j<n;j++){
+                if(j==id) continue;
+            }
+
+            go(id+1,nu,cnt+1);
+        }
+    };
+
+    go(0,0,0);
+
+    cout<<ans;
+}
+
+// input1:
+// 2 4
+// 8
+// 4
+// 0 1
+// 1 0
+// -1 0
+// 0 -1
+// 1
+// 0 1
+// 1
+// 1 0
+// 2
+// 0 -1
+// -1 0
+// 0
+// 0
+// 3
+// -2 0
+// 2 2
+// 1 0
+// 4
+// 0 1
+// 1 0
+// -1 0
+// 0 -1
+// your output1:
+// 7
+// correct output1:
+// 6
+
+
+
+// input2;
+// 3 3
+// 7
+// 2
+// 0 1
+// 1 0
+// 4
+// -1 0
+// 0 -1
+// 0 1
+// 1 0
+// 4
+// -1 0
+// 0 -1
+// 0 1
+// 1 0
+// 4
+// -1 0
+// 0 -1
+// 0 1
+// 1 0
+// 4
+// -1 0
+// 0 -1
+// 0 1
+// 1 0
+// 0
+// 0
+// your output2:
+// 7
+// correct output2:
+// 5
+
+
+// please make sure you give correct answer
