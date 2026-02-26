@@ -1,0 +1,236 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int N, M;
+    if (!(cin >> N >> M)) return 0;
+
+    int L;
+    cin >> L;
+
+    static bool vw[52][51];
+    static bool hw[51][52];
+    memset(vw, 0, sizeof(vw));
+    memset(hw, 0, sizeof(hw));
+
+    auto clip = [](int a, int low, int high) {
+        if (a < low) a = low;
+        if (a > high) a = high;
+    };
+
+    for (int i = 0; i < L; ++i) {
+        int x1, y1, x2, y2;
+        cin >> x1 >> y1 >> x2 >> y2;
+
+        if (x1 == x2) {
+            clip(x1, 0, N);
+            clip(x2, 0, N);
+            int a = min(y1, y2), b = max(y1, y2);
+            clip(a, 0, M);
+            clip(b, 0, M);
+            if (x1 < 0 || x1 > N) continue;
+            for (int y = a; y < b; ++y) {
+                if (y >= 0 && y < M) vw[x1][y] = true;
+            }
+        } else if (y1 == y2) {
+            clip(y1, 0, M);
+            clip(y2, 0, M);
+            int a = min(x1, x2), b = max(x1, x2);
+            clip(a, 0, N);
+            clip(b, 0, N);
+            if (y1 < 0 || y1 > M) continue;
+            for (int x = a; x < b; ++x) {
+                if (x >= 0 && x < N) hw[x][y1] = true;
+            }
+        }
+    }
+
+    int K;
+    cin >> K;
+
+    static int comp[51][51];
+    for (int x = 0; x < N; ++x) for (int y = 0; y < M; ++y) comp[x][y] = -1;
+
+    int compCount = 0;
+    for (int sx = 0; sx < N; ++sx) {
+        for (int sy = 0; sy < M; ++sy) {
+            if (comp[sx][sy] != -1) continue;
+            queue<pair<int,int>> q;
+            q.push({sx, sy});
+            comp[sx][sy] = compCount;
+
+            while (!q.empty()) {
+                pair<int,int> t = q.front(); q.pop();
+                int x = t.first, y = t.second;
+
+                if (x > 0 && !vw[x][y] && comp[x-1][y] == -1) {
+                    comp[x-1][y] = compCount;
+                    q.push({x-1, y});
+                }
+                if (x < N-1 && !vw[x+1][y] && comp[x+1][y] == -1) {
+                    comp[x+1][y] = compCount;
+                    q.push({x+1, y});
+                }
+                if (y > 0 && !hw[x][y] && comp[x][y-1] == -1) {
+                    comp[x][y-1] = compCount;
+                    q.push({x, y-1});
+                }
+                if (y < M-1 && !hw[x][y+1] && comp[x][y+1] == -1) {
+                    comp[x][y+1] = compCount;
+                    q.push({x, y+1});
+                }
+            }
+            ++compCount;
+        }
+    }
+
+    if (K < 1 || K > compCount) {
+        cout << "Impossible";
+        return 0;
+    }
+
+    int ans = INT_MAX;
+    vector<int> freq(compCount, 0);
+
+    for (int y0 = 0; y0 < M; ++y0) {
+        for (int y1 = y0 + 1; y1 <= M; ++y1) {
+            int height = y1 - y0;
+            fill(freq.begin(), freq.end(), 0);
+            int unique = 0, left = 0;
+
+            for (int right = 0; right < N; ++right) {
+                for (int y = y0; y < y1; ++y) {
+                    int id = comp[right][y];
+                    if (freq[id] == 0) ++unique;
+                    ++freq[id];
+                }
+                while (left <= right && unique >= K) {
+                    if (unique == K) {
+                        int width = right - left + 1;
+                        ans = min(ans, width * height);
+                    }
+                    for (int y = y0; y < y1; ++y) {
+                        int id = comp[left][y];
+                        --freq[id];
+                        if (freq[id] == 0) --unique;
+                    }
+                    ++left;
+                }
+            }
+        }
+    }
+
+    if (ans == INT_MAX) cout << "Impossible";
+    else cout << ans;
+    return 0;
+}
+
+the public cases are passing but private test cases are failing see the edge cases
+
+Gift BoxesMarks: 100
+Problem Description
+Nimo loves geometry and is tackling a challenge with a grid of rectangular boxes, trying to solve something unique. Let's take a closer look at it.
+
+Given an N × M grid of rectangular gift boxes, partition lines define the boundaries between individual boxes. The task is to place an axis-aligned rectangular block on the grid such that it overlaps exactly K gift boxes, either partially or fully.
+
+The objective is to determine the minimum possible area of such a rectangular block. If it is not possible to cover exactly K boxes, the output should be "Impossible."
+
+Constraints
+1 <= N, M <= 50
+
+1 <= L <= 30
+
+0 <= x1, y1, x2, y2 <= 50
+
+1 <= K <= 500
+
+All sections are guaranteed to be rectangles or squares.
+
+Input
+The first line contains two space-separated integers N and M, representing the grid dimensions.
+
+The second line contains an integer L, denoting the number of partition lines.
+
+The next L lines each contain four space-separated integers x1, y1, x2, y2, specifying the endpoints of a partition line segment.
+
+The final line contains an integer K, representing the number of gift boxes to be covered.
+
+Output
+Output a single integer representing the minimum area of the rectangular block that covers exactly K gift boxes.
+
+If it is not possible to cover exactly K boxes, or if K exceeds the total number of boxes, output "Impossible."
+
+Time Limit (secs)
+1
+
+Examples
+Example 1
+
+Input
+
+5 4
+
+6
+
+1 0 1 2
+
+0 3 3 3
+
+2 0 2 4
+
+4 0 4 2
+
+3 3 5 3
+
+0 2 5 2
+
+8
+
+Output
+
+15
+
+Explanation
+
+The arrangement of gift boxes given in the above input is shown below.
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@6c000e0c:image1.png
+
+Fig.1
+
+A rectangular block of size 5 × 3, placed with its top-left corner at (0, 4), overlaps exactly 8 gift boxes. The resulting area is 15, which is the minimum possible.
+
+Example 2
+
+Input
+
+3 3
+
+4
+
+0 1 3 1
+
+1 0 1 3
+
+0 2 3 2
+
+2 0 2 3
+
+5
+
+Output
+
+Impossible
+
+Explanation
+
+The arrangement of gift boxes given in the above input is shown below.
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@6c000e0c:image2.png
+
+Fig.2
+
+No rectangular block can overlap exactly 5 gift boxes, either partially or fully. Therefore, the correct output is "Impossible."
