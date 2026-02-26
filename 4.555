@@ -1,0 +1,140 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+using ld = long double;
+const ld EPS = 1e-12;
+
+struct Circle {
+    ld x, y, r;
+    ld top() const { return y + r; }
+};
+
+ld height(const Circle &c, ld X) {
+    ld dx = X - c.x;
+    ld val = c.r * c.r - dx * dx;
+    if (val < -EPS) return -1e300;
+    if (val < 0) val = 0;
+    return c.y + sqrtl(val);
+}
+
+ld circleSegmentArea(const Circle &c, ld L, ld R) {
+    auto F = [&](ld X) {
+        ld dx = X - c.x;
+        ld t = c.r * c.r - dx * dx;
+        if (t < 0) t = 0;
+        ld s = sqrtl(t);
+        ld ang = asinl(max((ld)-1, min((ld)1, dx / c.r)));
+        return 0.5L * (dx * s + c.r * c.r * ang);
+    };
+    return F(R) - F(L);
+}
+
+ld computeArea(vector<Circle>& a, int i, int j) {
+    ld H = min(a[i].top(), a[j].top());
+    if (H <= 0) return 0;
+
+    auto getX = [&](Circle &c, bool rightSide) {
+        if (fabsl(c.top() - H) < EPS) return c.x;
+        ld dy = H - c.y;
+        if (dy < 0 || dy > c.r) return c.x;
+        ld dx = sqrtl(max((ld)0, c.r*c.r - dy*dy));
+        return rightSide ? c.x - dx : c.x + dx;
+    };
+
+    ld L = getX(a[i], false);
+    ld R = getX(a[j], true);
+
+    if (R - L <= EPS) return 0;
+
+    vector<ld> X;
+    X.push_back(L);
+    X.push_back(R);
+
+    for (int k = i; k <= j; k++) {
+        X.push_back(a[k].x - a[k].r);
+        X.push_back(a[k].x + a[k].r);
+    }
+
+    sort(X.begin(), X.end());
+    X.erase(unique(X.begin(), X.end(),
+        [](ld A, ld B){ return fabsl(A-B) < 1e-10; }), X.end());
+
+    ld area = 0;
+
+    for (int k = 0; k + 1 < (int)X.size(); k++) {
+        ld A = max(L, X[k]);
+        ld B = min(R, X[k+1]);
+        if (B - A <= EPS) continue;
+
+        ld mid = (A + B) / 2;
+
+        int best = -1;
+        ld bestH = -1e300;
+
+        for (int t = i; t <= j; t++) {
+            ld h = height(a[t], mid);
+            if (h <= H + 1e-9 && h > bestH) {
+                bestH = h;
+                best = t;
+            }
+        }
+
+        if (best >= 0) {
+            ld seg = circleSegmentArea(a[best], A, B);
+            ld rect = (H - a[best].y) * (B - A);
+            area += max((ld)0, rect - seg);
+        }
+    }
+
+    return area;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin >> n;
+
+    vector<Circle> a(n);
+    for (int i = 0; i < n; i++)
+        cin >> a[i].x >> a[i].y >> a[i].r;
+
+    sort(a.begin(), a.end(), [](const Circle &A, const Circle &B) {
+        if (fabsl(A.x - B.x) > EPS) return A.x < B.x;
+        return A.top() < B.top();
+    });
+
+    ld ans = 0;
+
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+
+            ld maxMid = -1e300;
+            for (int k = i + 1; k < j; k++)
+                maxMid = max(maxMid, a[k].top());
+
+            ld H = min(a[i].top(), a[j].top());
+            if (maxMid < H - EPS) {
+                ans = max(ans, computeArea(a, i, j));
+            }
+        }
+    }
+
+    cout << fixed << setprecision(2) << (double)ans << "\n";
+}
+
+// input1:
+// 5
+// 0 0 2
+// 4 0 2
+// 7 0 1
+// 8 0 1
+// 10 0 2
+// your output1:
+// 4.15
+// correct output1:
+// 3.89
+
+// this one is not passing private testcases 
+// please give me a code that passes all private testcases
