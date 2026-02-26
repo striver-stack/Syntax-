@@ -1,0 +1,492 @@
+// 7
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int R, C, N;
+vector<vector<pair<int,int>>> threat;
+
+vector<vector<long long>> threatMask;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin >> R >> C;
+    cin >> N;
+
+    int total = R * C;
+
+    threat.resize(N);
+
+    for (int i = 0; i < N; i++) {
+        int k;
+        cin >> k;
+        while (k--) {
+            int dr, dc;
+            cin >> dr >> dc;
+            threat[i].push_back({dr, dc});
+        }
+    }
+
+    threatMask.assign(N, vector<long long>(total, 0));
+
+    for (int i = 0; i < N; i++) {
+        for (int cell = 0; cell < total; cell++) {
+
+            int r = cell / C;
+            int c = cell % C;
+
+            long long mask = 0;
+
+            for (auto &t : threat[i]) {
+                int nr = r + t.first;
+                int nc = c + t.second;
+
+                if (nr < 0 || nr >= R || nc < 0 || nc >= C)
+                    continue;
+
+                int ncell = nr * C + nc;
+                mask |= (1LL << ncell);
+            }
+
+            threatMask[i][cell] = mask;
+        }
+    }
+
+    int ans = 0;
+
+    for (int subset = 0; subset < (1 << N); subset++) {
+
+        int cnt = __builtin_popcount(subset);
+        if (cnt <= ans) continue;
+
+        vector<int> travellers;
+        for (int i = 0; i < N; i++)
+            if (subset & (1 << i))
+                travellers.push_back(i);
+
+        function<bool(int, long long, long long)> place =
+        [&](int idx, long long occupied, long long threatened) {
+
+            if (idx == travellers.size())
+                return true;
+
+            int t = travellers[idx];
+
+            for (int cell = 0; cell < total; cell++) {
+
+                if (occupied & (1LL << cell)) continue;
+                if (threatened & (1LL << cell)) continue;
+
+                long long newThreat = threatMask[t][cell];
+
+                if (newThreat & occupied) continue;
+
+                if (place(idx + 1,
+                          occupied | (1LL << cell),
+                          threatened | newThreat))
+                    return true;
+            }
+
+            return false;
+        };
+
+        if (place(0, 0, 0))
+            ans = cnt;
+    }
+
+    cout << ans << "\n";
+    return 0;
+}
+
+// input1:
+// 2 4
+// 8
+// 4
+// 0 1
+// 1 0
+// -1 0
+// 0 -1
+// 1
+// 0 1
+// 1
+// 1 0
+// 2
+// 0 -1
+// -1 0
+// 0
+// 0
+// 3
+// -2 0
+// 2 2
+// 1 0
+// 4
+// 0 1
+// 1 0
+// -1 0
+// 0 -1
+// your output1:
+// 6
+// correct output1:
+// 6
+
+
+
+// input2;
+// 3 3
+// 7
+// 2
+// 0 1
+// 1 0
+// 4
+// -1 0
+// 0 -1
+// 0 1
+// 1 0
+// 4
+// -1 0
+// 0 -1
+// 0 1
+// 1 0
+// 4
+// -1 0
+// 0 -1
+// 0 1
+// 1 0
+// 4
+// -1 0
+// 0 -1
+// 0 1
+// 1 0
+// 0
+// 0
+// your output2:
+// 5
+// correct output2:
+// 5
+
+/*Grumpy TravelersMarks: 100
+Problem Description
+A hotel manager is tasked with assigning unique travelers to a finite arrangement of rooms. Each traveler possesses a defined Grumpiness Profile, which includes specific threat coordinates (dr, dc), indicating the particular rooms that become unavailable when that individual is assigned.
+
+The grid has dimensions R x C, and the goal is to position maximum number of travelers without violating any threat constraints.
+
+When traveler Ti is positioned at cell (r1, c1), the traveler imposes threat constraints on the cell located at (r1 + dr, c1 + dc), where each (dr, dc) pair is defined in the traveler's threat profile. A placement is considered valid only if the following conditions are satisfied:
+
+No traveler is placed in a cell threatened by another traveler already on the grid.
+No traveler is assigned to a cell that would, in turn, threaten the position of any traveler already placed on the grid.
+Each traveler is distinct and may be used at most once.
+Determine the maximum number of travelers that can be simultaneously placed on the grid without violating any defined threat constraints.
+
+Note: Travelers do not know the grid size in advance. Their threat rules may point to coordinates that fall outside the boundaries of the R x C grid. Any such "out-of-bound" threats are simply ignored and do not affect the placement.
+
+Constraints
+1 <= R + C <= 7
+
+1 <= N <= 15
+
+Input
+First line consists of two integers, R and C representing the size of the grid.
+
+Second line consists of an integer N denoting the total number of unique travelers.
+
+Next lines - For each traveler T1 to TN,
+
+An integer K (The number of threat rules for this traveler).
+K lines each containing two integers dr and dc.
+dr and dc can be negative too.
+
+Output
+Print a single integer representing the maximum number of travelers that can be successfully placed.
+
+Time Limit (secs)
+1
+
+Examples
+Example 1
+
+Input
+
+2 4
+
+8
+
+4
+
+0 1
+
+1 0
+
+-1 0
+
+0 -1
+
+1
+
+0 1
+
+1
+
+1 0
+
+2
+
+0 -1
+
+-1 0
+
+0
+
+0
+
+3
+
+-2 0
+
+2 2
+
+1 0
+
+4
+
+0 1
+
+1 0
+
+-1 0
+
+0 -1
+
+Output
+
+6
+
+Explanation
+
+The room layout is a 2×4 grid, giving a total of 8 rooms, and there are 8 travelers. However, with the given constraints, the maximum number of travelers that can be accommodated is 6, which is shown below.
+
+T1 . T4 T2
+
+. T3 T5 T6
+
+*The arrangement shown above is one valid configuration that achieves this maximum value.
+
+Example 2
+
+Input
+
+3 3
+
+7
+
+2
+
+0 1
+
+1 0
+
+4
+
+-1 0
+
+0 -1
+
+0 1
+
+1 0
+
+4
+
+-1 0
+
+0 -1
+
+0 1
+
+1 0
+
+4
+
+-1 0
+
+0 -1
+
+0 1
+
+1 0
+
+4
+
+-1 0
+
+0 -1
+
+0 1
+
+1 0
+
+0
+
+0
+
+Output
+
+5
+
+Explanation
+
+The room layout is a 3×3 grid, giving a total of 9 rooms, and there are 7 travelers. However, with the given constraints, the maximum number of travelers that can be accommodated is 5, which is shown below.
+
+T1 . T2
+
+. T3 .
+
+T4 . T5
+
+*The arrangement shown above is one valid configuration that achieves this maximum value.*/
+
+
+Copy everything inside the box below and paste it into the AI you want to use.
+
+You are a self-checking coding agent. Your job is to write a correct and efficient C++17 solution for the following problem and **only** output the final code if it **passes all tests** you privately generate (including hard/edge cases).
+
+==================== PROBLEM ====================
+
+Grumpy Travelers
+
+A hotel manager assigns unique travelers to an R×C grid of rooms. Each traveler Ti has a set of threat offsets (dr, dc). If Ti is placed at (r, c), then (r + dr, c + dc) becomes threatened. Any out-of-bound targets are ignored.
+
+Valid placement rules:
+1) No traveler is placed in a cell threatened by any already placed traveler.
+2) No traveler is placed in a cell that would threaten the position of any already placed traveler (i.e., the new traveler’s threats must not hit an already occupied cell).
+3) Each traveler is used at most once.
+
+Goal: Maximize the number of travelers you can simultaneously place.
+
+Constraints:
+- 1 <= R + C <= 7
+- 1 <= N <= 15
+
+Input format:
+- R C
+- N
+- For i in [1..N]:
+  - K
+  - Then K lines of (dr, dc) (can be negative)
+
+Output:
+- A single integer: the maximum number of travelers that can be placed.
+
+================= END PROBLEM ===================
+
+## Approach requirements (internal, do NOT output):
+1) **Write an independent oracle (reference) solver** that is guaranteed correct, even if slower. A straightforward backtracking that tries all assignments is OK due to small grid (R+C ≤ 7 → R*C ≤ 12). Use bitmasks and strong pruning (e.g., skip symmetric/invalid states early). This will compute the true optimum.
+2) **Write a production solver** (may be the same algorithm but clean and efficient) to submit as the final answer.
+3) **Privately generate 20 diverse test cases**, all within constraints, including:
+   - Edge grids: 1×1, 1×(2..6), 2×(2..5), 3×4 (max area), etc.
+   - N from small to 15; include cases where N > R*C.
+   - Travelers with K = 0 (no threats).
+   - Threats pointing out-of-bounds.
+   - Threat sets that are symmetric, asymmetric, duplicate offsets, negative offsets, long jumps (e.g., ±2, ±3).
+   - High-density constraints and low-density constraints.
+   - Cases where the best uses fewer than min(N, R*C).
+4) **Also include these two public samples** in your internal test set:
+
+   Sample 1:
+   Input:
+   2 4
+   8
+   4
+   0 1
+   1 0
+   -1 0
+   0 -1
+   1
+   0 1
+   1
+   1 0
+   2
+   0 -1
+   -1 0
+   0
+   0
+   3
+   -2 0
+   2 2
+   1 0
+   4
+   0 1
+   1 0
+   -1 0
+   0 -1
+   Expected output: 6
+
+   Sample 2:
+   Input:
+   3 3
+   7
+   2
+   0 1
+   1 0
+   4
+   -1 0
+   0 -1
+   0 1
+   1 0
+   4
+   -1 0
+   0 -1
+   0 1
+   1 0
+   4
+   -1 0
+   0 -1
+   0 1
+   1 0
+   4
+   -1 0
+   0 -1
+   0 1
+   1 0
+   0
+   0
+   Expected output: 5
+
+5) **Validation loop (internal, do NOT output)**:
+   - For each private test:
+     a) Compute the correct answer with the oracle.
+     b) Run the production solver on the same input.
+     c) Assert production == oracle for all 20 private tests and the 2 samples.
+   - If any test fails, diagnose, fix the production solver, and **re-run all tests**. Repeat until all pass.
+
+6) **Performance target**: Solutions must run comfortably within 1s for worst legal inputs. Prefer bitmasks (64-bit is fine because R*C ≤ 12). Precompute, prune aggressively, and consider ordering heuristics:
+   - Precompute threat masks: threatMask[i][cell] = bitmask of threatened cells if traveler i is at cell.
+   - Place travelers in order of **fewest available cells** (MRV heuristic).
+   - Skip cells already occupied or threatened; skip placements where newThreat intersects occupied.
+   - Optional: branch-and-bound upper bounds to prune.
+
+7) **Final output rule (critical)**:
+   - **Only** output the final **production** C++17 code, in a single fenced code block.
+   - **Do not** print test cases, oracle code, explanations, logs, or any other text.
+   - If you could not make the code pass *all* internal tests, output **nothing**.
+
+## Implementation notes (allowed to use, but do NOT output as text):
+- Use `long long`/`uint64_t` for masks.
+- Precompute per traveler, per cell threatMask.
+- Backtracking function signature idea:
+  place(idx, occupiedMask, threatenedMask) → bool/maximum
+- A reliable pattern:
+  - Either enumerate traveler subsets with backtracking over cells,
+  - Or directly backtrack over travelers with MRV on candidate cells, track best.
+- Input/output must strictly follow the problem format. Output only the integer answer.
+
+## Final deliverable:
+If and only if your production solver passes the oracle on all internal tests (20 private + 2 samples), output:
+
+```cpp
+// your final, clean C++17 solution here
+
+finally i want a beat and correct c++ code from you
+
+
