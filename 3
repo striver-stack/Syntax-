@@ -1,0 +1,120 @@
+Flip ImageMarks: 30
+Problem Description
+Vijay, a grade 6 student, shows interest in many subjects, but he consistently struggles with mathematics - especially geometry. With his exam approaching, his mother grows concerned about his preparation and aims to strengthen his understanding, check his visualization skills, and build his interest by using simple, visually oriented problems.
+
+For one activity, she gives Vijay a Cartesian coordinate graph containing two closed figures made only of horizontal and vertical lines. Each figure lies entirely within a single quadrant and does not cross into another.
+
+Vijay must mentally transform the first figure by creating either its mirror image or its water image. He then compares the transformed figure with the second figure on the graph. If the two overlap, he must calculate the area of the overlapping region.
+
+Vijay must follow these transformation rules:
+
+Mirror Image:
+
+A figure in Quadrant I -> mirror image in Quadrant II
+Quadrant II -> Quadrant I
+Quadrant III -> Quadrant IV
+Quadrant IV -> Quadrant III
+Water Image:
+
+A figure in Quadrant I -> mirror image in Quadrant IV
+Quadrant II -> Quadrant III
+Quadrant III -> Quadrant II
+Quadrant IV -> Quadrant I
+Help Vijay to come up with the solution.
+
+Constraints
+4 <= N, M <= 12
+
+Input
+The first line contains two space-separated integers, N and M, representing the number of straight lines in first and second figure respectively.
+
+Lines 2 to N+1 each contain four integers: X1, Y1, X2, Y2, representing the endpoints of edges in the first figure.
+
+Lines N+2 to N+1+M contain four space-separated integers: X1, Y1, X2, Y2, representing the endpoints of edges in the second figure.
+
+The last line contains the string {mirror | water}, which specifies the reflection to be performed on the initial figure.
+
+Output
+"YES / NO" indicating whether the reflected image of the initial figure overlaps with the second figure.
+
+<integer> specifying the area of overlap if and only if the reflection overlaps with the second figure.
+
+Time Limit (secs)
+1
+
+Examples
+Example 1
+
+Input
+
+4 4
+
+-1 3 -4 3
+
+-1 1 -4 1
+
+-1 3 -1 1
+
+-4 3 -4 1
+
+4 3 5 3
+
+4 4 4 3
+
+5 4 5 3
+
+4 4 5 4
+
+mirror
+
+Output
+
+NO
+
+Explanation
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@5f84abe8:image1.png
+
+The first figure is outlined with green border whereas the second figure is outlined with blue border. The reflection of the first figure is outline with dotted border. By the visuals above, it can be clearly seen that the reflection of the first figure does not overlap the second figure, hence the answer - NO.
+
+Example 2
+
+Input
+
+4 4
+
+-7 1 -2 1
+
+-7 3 -2 3
+
+-7 1 -7 3
+
+-2 1 -2 3
+
+-3 -2 -1 -2
+
+-3 -4 -1 -4
+
+-3 -2 -3 -4
+
+-1 -2 -1 -4
+
+water
+
+Output
+
+YES
+
+1
+
+Explanation
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@5f84abe8:image2.png
+
+The first figure is outlined with green border whereas the second figure is outlined with blue border. The reflection of the first figure is outline with dotted border. By the visuals above, it can be clearly seen that the reflection of the first figure overlaps the second figure for 1 square unit. Hence, the answer.
+
+make funct, calculation part up and down to look like a hurry , busy low level coding knowledge man rewrite this code.
+
+use small variable and function name, change structure of code.
+
+remove comments and modify this code that anyone can't find that i have copied
