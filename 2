@@ -111,3 +111,161 @@ make funct, calculation part up and down to look like a hurry , busy low level c
 use small variable and function name, change structure of code.
 
 remove comments and modify this code that anyone can't find that i have copied
+
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int n, m, l, k;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(0);
+
+    cin >> n >> m;
+    cin >> l;
+
+    vector<array<int,4>> seg(l);
+    set<int> xs, ys;
+
+    xs.insert(0); xs.insert(n);
+    ys.insert(0); ys.insert(m);
+
+    for(int i = 0; i < l; i++){
+        cin >> seg[i][0] >> seg[i][1] >> seg[i][2] >> seg[i][3];
+        xs.insert(seg[i][0]);
+        xs.insert(seg[i][2]);
+        ys.insert(seg[i][1]);
+        ys.insert(seg[i][3]);
+    }
+
+    cin >> k;
+
+    vector<int> vx(xs.begin(), xs.end());
+    vector<int> vy(ys.begin(), ys.end());
+
+    int xn = vx.size();
+    int yn = vy.size();
+
+    map<int,int> mx, my;
+    for(int i = 0; i < xn; i++) mx[vx[i]] = i;
+    for(int i = 0; i < yn; i++) my[vy[i]] = i;
+
+    vector<vector<int>> wall(xn, vector<int>(yn, 0));
+
+    for(auto &s : seg){
+        int x1 = mx[s[0]], x2 = mx[s[2]];
+        int y1 = my[s[1]], y2 = my[s[3]];
+
+        if(x1 == x2){
+            for(int y = min(y1,y2); y < max(y1,y2); y++)
+                wall[x1][y] = 1;
+        } else {
+            for(int x = min(x1,x2); x < max(x1,x2); x++)
+                wall[x][y1] = 1;
+        }
+    }
+
+    vector<vector<int>> box(xn-1, vector<int>(yn-1, -1));
+    int id = 0;
+
+    for(int i = 0; i < xn-1; i++){
+        for(int j = 0; j < yn-1; j++){
+            if(box[i][j] != -1) continue;
+
+            queue<pair<int,int>> q;
+            q.push({i,j});
+            box[i][j] = id;
+
+            while(!q.empty()){
+                auto [cx,cy] = q.front(); q.pop();
+
+                if(cx+1 < xn-1 && !wall[cx+1][cy] && box[cx+1][cy]==-1){
+                    box[cx+1][cy] = id;
+                    q.push({cx+1,cy});
+                }
+                if(cx-1 >= 0 && !wall[cx][cy] && box[cx-1][cy]==-1){
+                    box[cx-1][cy] = id;
+                    q.push({cx-1,cy});
+                }
+                if(cy+1 < yn-1 && !wall[cx][cy+1] && box[cx][cy+1]==-1){
+                    box[cx][cy+1] = id;
+                    q.push({cx,cy+1});
+                }
+                if(cy-1 >= 0 && !wall[cx][cy] && box[cx][cy-1]==-1){
+                    box[cx][cy-1] = id;
+                    q.push({cx,cy-1});
+                }
+            }
+            id++;
+        }
+    }
+
+    if(k > id){
+        cout << "Impossible";
+        return 0;
+    }
+
+    int ans = INT_MAX;
+
+    for(int x1 = 0; x1 < xn; x1++){
+        for(int x2 = x1+1; x2 <= xn; x2++){
+            for(int y1 = 0; y1 < yn; y1++){
+                for(int y2 = y1+1; y2 <= yn; y2++){
+
+                    set<int> st;
+
+                    for(int i = x1; i < x2; i++){
+                        for(int j = y1; j < y2; j++){
+                            if(i < xn-1 && j < yn-1)
+                                st.insert(box[i][j]);
+                        }
+                    }
+
+                    if((int)st.size() == k){
+                        int area = (vx[x2-1] - vx[x1]) * (vy[y2-1] - vy[y1]);
+                        ans = min(ans, area);
+                    }
+                }
+            }
+        }
+    }
+
+    if(ans == INT_MAX) cout << "Impossible";
+    else cout << ans;
+
+    return 0;
+}
+
+
+
+// input1:
+// 5 4
+// 6
+// 1 0 1 2
+// 0 3 3 3
+// 2 0 2 4
+// 4 0 4 2
+// 3 3 5 3
+// 0 2 5 2
+// 8
+// your output1:
+// 3
+// correct output1:
+// 15
+
+// input2:
+// 3 3
+// 4
+// 0 1 3 1
+// 1 0 1 3
+// 0 2 3 2
+// 2 0 2 3
+// 5
+// your output2:
+// Impossible
+// correct output2:
+// Impossible
+
+// please make sure rewrite correct code.
+
