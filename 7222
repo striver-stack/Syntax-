@@ -1,0 +1,334 @@
+// 7
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int r, c, n;
+int ans = 0;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin >> r >> c;
+    cin >> n;
+
+    int tot = r * c;
+
+    vector<vector<pair<int,int>>> shapes(n);
+
+    for (int i = 0; i < n; i++) {
+        int k;
+        cin >> k;
+        while (k--) {
+            int x, y;
+            cin >> x >> y;
+            shapes[i].push_back({x, y});
+        }
+    }
+
+    // mask[i][p] = bitmask of cells occupied if shape i placed at position p
+    vector<vector<int>> mask(n, vector<int>(tot, 0));
+
+    for (int i = 0; i < n; i++) {
+        for (int p = 0; p < tot; p++) {
+
+            int x = p / c;
+            int y = p % c;
+
+            int m = 0;
+            bool valid = true;
+
+            for (auto &q : shapes[i]) {
+                int nx = x + q.first;
+                int ny = y + q.second;
+
+                if (nx < 0 || nx >= r || ny < 0 || ny >= c) {
+                    valid = false;
+                    break;
+                }
+
+                m |= (1 << (nx * c + ny));
+            }
+
+            if (valid)
+                mask[i][p] = m;
+            else
+                mask[i][p] = 0;
+        }
+    }
+
+    function<void(int,int,int)> dfs = [&](int id, int used, int cnt) {
+
+        if (id == n) {
+            ans = max(ans, cnt);
+            return;
+        }
+
+        // Option 1: skip this shape
+        dfs(id + 1, used, cnt);
+
+        // Option 2: try placing shape at all positions
+        for (int p = 0; p < tot; p++) {
+
+            int m = mask[id][p];
+
+            if (m == 0) continue;          // invalid placement
+            if (used & m) continue;        // overlap
+
+            dfs(id + 1, used | m, cnt + 1);
+        }
+    };
+
+    dfs(0, 0, 0);
+
+    cout << ans << "\n";
+}
+
+// input1:
+// 2 4
+// 8
+// 4
+// 0 1
+// 1 0
+// -1 0
+// 0 -1
+// 1
+// 0 1
+// 1
+// 1 0
+// 2
+// 0 -1
+// -1 0
+// 0
+// 0
+// 3
+// -2 0
+// 2 2
+// 1 0
+// 4
+// 0 1
+// 1 0
+// -1 0
+// 0 -1
+// your output1:
+// 3
+// correct output1:
+// 6
+
+
+
+// input2;
+// 3 3
+// 7
+// 2
+// 0 1
+// 1 0
+// 4
+// -1 0
+// 0 -1
+// 0 1
+// 1 0
+// 4
+// -1 0
+// 0 -1
+// 0 1
+// 1 0
+// 4
+// -1 0
+// 0 -1
+// 0 1
+// 1 0
+// 4
+// -1 0
+// 0 -1
+// 0 1
+// 1 0
+// 0
+// 0
+// your output2:
+// 2
+// correct output2:
+// 5
+
+/*Grumpy TravelersMarks: 100
+Problem Description
+A hotel manager is tasked with assigning unique travelers to a finite arrangement of rooms. Each traveler possesses a defined Grumpiness Profile, which includes specific threat coordinates (dr, dc), indicating the particular rooms that become unavailable when that individual is assigned.
+
+The grid has dimensions R x C, and the goal is to position maximum number of travelers without violating any threat constraints.
+
+When traveler Ti is positioned at cell (r1, c1), the traveler imposes threat constraints on the cell located at (r1 + dr, c1 + dc), where each (dr, dc) pair is defined in the traveler's threat profile. A placement is considered valid only if the following conditions are satisfied:
+
+No traveler is placed in a cell threatened by another traveler already on the grid.
+No traveler is assigned to a cell that would, in turn, threaten the position of any traveler already placed on the grid.
+Each traveler is distinct and may be used at most once.
+Determine the maximum number of travelers that can be simultaneously placed on the grid without violating any defined threat constraints.
+
+Note: Travelers do not know the grid size in advance. Their threat rules may point to coordinates that fall outside the boundaries of the R x C grid. Any such "out-of-bound" threats are simply ignored and do not affect the placement.
+
+Constraints
+1 <= R + C <= 7
+
+1 <= N <= 15
+
+Input
+First line consists of two integers, R and C representing the size of the grid.
+
+Second line consists of an integer N denoting the total number of unique travelers.
+
+Next lines - For each traveler T1 to TN,
+
+An integer K (The number of threat rules for this traveler).
+K lines each containing two integers dr and dc.
+dr and dc can be negative too.
+
+Output
+Print a single integer representing the maximum number of travelers that can be successfully placed.
+
+Time Limit (secs)
+1
+
+Examples
+Example 1
+
+Input
+
+2 4
+
+8
+
+4
+
+0 1
+
+1 0
+
+-1 0
+
+0 -1
+
+1
+
+0 1
+
+1
+
+1 0
+
+2
+
+0 -1
+
+-1 0
+
+0
+
+0
+
+3
+
+-2 0
+
+2 2
+
+1 0
+
+4
+
+0 1
+
+1 0
+
+-1 0
+
+0 -1
+
+Output
+
+6
+
+Explanation
+
+The room layout is a 2×4 grid, giving a total of 8 rooms, and there are 8 travelers. However, with the given constraints, the maximum number of travelers that can be accommodated is 6, which is shown below.
+
+T1 . T4 T2
+
+. T3 T5 T6
+
+*The arrangement shown above is one valid configuration that achieves this maximum value.
+
+Example 2
+
+Input
+
+3 3
+
+7
+
+2
+
+0 1
+
+1 0
+
+4
+
+-1 0
+
+0 -1
+
+0 1
+
+1 0
+
+4
+
+-1 0
+
+0 -1
+
+0 1
+
+1 0
+
+4
+
+-1 0
+
+0 -1
+
+0 1
+
+1 0
+
+4
+
+-1 0
+
+0 -1
+
+0 1
+
+1 0
+
+0
+
+0
+
+Output
+
+5
+
+Explanation
+
+The room layout is a 3×3 grid, giving a total of 9 rooms, and there are 7 travelers. However, with the given constraints, the maximum number of travelers that can be accommodated is 5, which is shown below.
+
+T1 . T2
+
+. T3 .
+
+T4 . T5
+
+*The arrangement shown above is one valid configuration that achieves this maximum value.*/
+
+// please make sure you give correct answer
