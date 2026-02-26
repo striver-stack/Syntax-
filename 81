@@ -1,0 +1,399 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+vector<string> ln, outp;
+int n;
+
+bool isBlk(string &s){
+    if(s.find("for ")==0) return 1;
+    if(s.find("while ")==0) return 1;
+    if(s.find("if ")==0) return 1;
+    if(s=="else:") return 1;
+    return 0;
+}
+
+string trim(string s){
+    while(s.size() && (s.back()==' '||s.back()=='\n'||s.back()=='\r')) s.pop_back();
+    while(s.size() && s[0]==' ') s.erase(s.begin());
+    return s;
+}
+
+vector<string> splitCode(string s){
+    vector<string> r;
+    string cur="";
+    for(int i=0;i<s.size();i++){
+        if(s[i]==';'){
+            if(cur.size()) r.push_back(trim(cur));
+            cur="";
+        }
+        else cur+=s[i];
+    }
+    if(cur.size()) r.push_back(trim(cur));
+    return r;
+}
+
+bool sim(vector<int> &ind){
+    map<string,int> mp;
+    vector<string> o;
+    int i=0;
+    stack<int> st;
+
+    function<void(int)> go=[&](int lvl){
+        while(i<n){
+            if(ind[i]<lvl) return;
+            if(ind[i]>lvl) return;
+            string s=ln[i];
+            i++;
+
+            if(s.find("=")!=string::npos && s.find("==")==string::npos){
+                int p=s.find("=");
+                string a=s.substr(0,p);
+                string b=s.substr(p+1);
+                if(b=="True") mp[a]=1;
+                else if(b=="False") mp[a]=0;
+                else if(isdigit(b[0])) mp[a]=stoi(b);
+                else mp[a]=mp[b];
+            }
+            else if(s.find("print")!=string::npos){
+                int p=s.find("(");
+                int q=s.rfind(")");
+                string x=s.substr(p+1,q-p-1);
+                if(x[0]=='"'||x[0]=='\''){
+                    x=x.substr(1,x.size()-2);
+                    o.push_back(x);
+                }
+                else o.push_back(to_string(mp[x]));
+            }
+            else if(s.find("while ")==0){
+                int p=s.find("while ")+6;
+                int q=s.find(":");
+                string c=s.substr(p,q-p);
+                int pos=c.find(">");
+                string a=c.substr(0,pos);
+                int v=stoi(c.substr(pos+1));
+                int save=i;
+                while(mp[a]>v){
+                    int t=i;
+                    go(lvl+1);
+                    i=save;
+                }
+                while(i<n && ind[i]>lvl) i++;
+            }
+            else if(s.find("for ")==0){
+                int p=s.find("range(");
+                int q=s.find(")");
+                string t=s.substr(p+6,q-p-6);
+                int a,b;
+                if(t.find(",")!=string::npos){
+                    int c=t.find(",");
+                    a=stoi(t.substr(0,c));
+                    b=stoi(t.substr(c+1));
+                }else{
+                    a=0;
+                    b=stoi(t);
+                }
+                string var=s.substr(4,s.find(" in")-4);
+                int save=i;
+                for(int k=a;k<b;k++){
+                    mp[var]=k;
+                    int t2=i;
+                    go(lvl+1);
+                    i=save;
+                }
+                while(i<n && ind[i]>lvl) i++;
+            }
+            else if(s.find("if ")==0){
+                int p=s.find("if ")+3;
+                int q=s.find(":");
+                string c=s.substr(p,q-p);
+                bool ok=0;
+                if(c.find("%")!=string::npos){
+                    int a=mp[c.substr(0,c.find("%"))];
+                    int b=stoi(c.substr(c.find("%")+1,c.find("==")-c.find("%")-1));
+                    int d=stoi(c.substr(c.find("==")+2));
+                    if(a%b==d) ok=1;
+                }
+                else if(c.find("==")!=string::npos){
+                    string a=c.substr(0,c.find("=="));
+                    string b=c.substr(c.find("==")+2);
+                    if(isdigit(b[0])) ok=(mp[a]==stoi(b));
+                    else ok=(mp[a]==mp[b]);
+                }
+                int save=i;
+                if(ok) go(lvl+1);
+                else{
+                    while(i<n && ind[i]>lvl) i++;
+                }
+            }
+        }
+    };
+
+    go(0);
+    return o==outp;
+}
+
+bool dfs(int idx, vector<int> &ind){
+    if(idx==n) return sim(ind);
+    for(int k=0;k<=n;k++){
+        ind[idx]=k;
+        if(idx>0 && ind[idx]>ind[idx-1]+1) continue;
+        if(dfs(idx+1,ind)) return 1;
+    }
+    return 0;
+}
+
+int main(){
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    string s,tmp;
+    getline(cin,s);
+
+    ln=splitCode(s);
+    n=ln.size();
+
+    while(getline(cin,tmp)){
+        if(tmp.size()) outp.push_back(trim(tmp));
+    }
+
+    vector<int> ind(n,0);
+    if(dfs(0,ind)){
+        for(int i=0;i<n;i++){
+            for(int j=0;j<ind[i]*4;j++) cout<<" ";
+            cout<<ln[i]<<"\n";
+        }
+    }
+    else cout<<"Not possible";
+
+    return 0;
+}
+
+
+// input1:
+// n=2;while n>0:print('Go');n=n-1;print('Stop');print("End");
+// Go
+// Go
+// Stop
+// End
+// your output1:
+// Not possible
+// correct output1:
+// n=2
+// while n>0:
+//      print('Go')
+//      n=n-1
+// print('Stop')
+// print("End")
+
+
+
+// input2:
+// for i in range(2):for j in range(2):print('Inner');print('Outer');print('Done');
+// Inner
+// Inner
+// Outer
+// Inner
+// Inner
+// Outer
+// Done
+// your output1:
+// Not possible
+// correct output1:
+// for i in range(2):
+//      for j in range(2):
+//         print('Inner')
+//     print('Outer')
+// print('Done')
+
+
+// please make sure you see the difference in your output and actual output and give me correct code please
+
+/*Code Formatter
+Problem Description
+The robotics lab suffered a major power surge last night, causing a complete outage. This corrupted the robot's pseudocode, compressing it into a single unformatted line. However, the outputs were intact in the log file.
+
+Your task is to restore the correct structure by re-adding the proper indentation and line breaks, so the program produces the exact output required. Only add indentation and line breaks; do not modify the syntax or the order of the lines.
+
+Syntax Guide
+
+Indentation defines logical blocks in pseudocode, such as loops, conditions, and repeated sections. Incorrect indentation can change program behavior or lead to errors.
+
+Increase indentation by 4 spaces for each new block.
+Blocks may be nested, with each nested level requiring additional indentation.
+True and False are boolean values.
+Example pseudocode.
+
+for c in "Hi":
+
+    print(c)
+
+flag=True
+
+if flag:
+
+    if 10%2==0:
+
+         print("Even")
+
+mode='auto'
+
+if mode=='auto':
+
+    for i in range(2):
+
+        n=1
+
+        while n>0:
+
+            print('Loop')
+
+            n=n-1
+
+else:
+
+    print('Manual')
+
+for i in range(2,5):
+
+     print(i)
+
+v=4
+
+for i in range(2,v):
+
+     print(i)
+
+print('finally'+'Done')
+
+Output of the above pseudocode -
+
+H
+
+i
+
+Even
+
+Loop
+
+Loop
+
+2
+
+3
+
+4
+
+2
+
+3
+
+finallyDone
+
+The input pseudocode will include some or all of the operations present in the code above.
+
+Your task is to take the compressed code and the memory log and find the only way to indent the lines, so the pseudocode works exactly like it did before the crash and produce the output recorded in the log file.
+
+Constraints
+1 <= Number of lines in the formatted code <= 20
+
+1 < Number of iterations in the loops <= 20
+
+For each test case, there will be only one correct code snippet possible for the given output.
+
+Every line in the code is separated by a colon or semi colon.
+
+Input
+A single string containing multiple lines of pseudocode code, separated by colons and semicolons.
+
+The following lines represent the output generated by executing the above code with the correct indentation.
+
+Output
+Print the reconstructed pseudocode with proper indentation and newlines corresponding to the given output. If no possible construction exists, print "Not possible".
+
+Time Limit (secs)
+1
+
+Examples
+Example 1
+
+Input
+
+n=2;while n>0:print('Go');n=n-1;print('Stop');print("End");
+
+Go
+
+Go
+
+Stop
+
+End
+
+Output
+
+n=2
+
+while n>0:
+
+     print('Go')
+
+     n=n-1
+
+print('Stop')
+
+print("End")
+
+Explanation
+
+As you can see, indenting the input code as shown above and evaluating it will generate the expected output.
+
+Example 2
+
+Input
+
+for i in range(2):n=i;while n<2:if n%2==0:print('Inside');n=n+1;print("End");
+
+Inside
+
+Output
+
+Not possible
+
+Explanation
+
+As you can observe, regardless of how the code snippet is indented, it will not produce the expected output. Hence print "Not possible".
+
+Example 3
+
+Input
+
+for i in range(2):for j in range(2):print('Inner');print('Outer');print('Done');
+
+Inner
+
+Inner
+
+Outer
+
+Inner
+
+Inner
+
+Outer
+
+Done
+
+Output
+
+for i in range(2):
+
+     for j in range(2):
+
+        print('Inner')
+
+    print('Outer')
+
+print('Done')
+
+Explanation
+
+As you can see, indenting the input code as shown above and evaluating it will generate the expected output.*/
