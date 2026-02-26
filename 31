@@ -1,0 +1,205 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+struct P {
+    int x, y;
+};
+
+void flip(vector<P> &v, const string &t) {
+    for (size_t i = 0; i < v.size(); i++) {
+        if (t == "mirror") {
+            v[i].x = -v[i].x;
+        } else {
+            v[i].y = -v[i].y;
+        }
+    }
+}
+
+bool box(const vector<P> &v, int &mnx, int &mxx, int &mny, int &mxy) {
+    if (v.empty()) return false; // Defensive: avoid UB if called with empty vector
+    mnx = mxx = v[0].x;
+    mny = mxy = v[0].y;
+    for (size_t i = 1; i < v.size(); i++) {
+        mnx = min(mnx, v[i].x);
+        mxx = max(mxx, v[i].x);
+        mny = min(mny, v[i].y);
+        mxy = max(mxy, v[i].y);
+    }
+    return true;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m;
+    if (!(cin >> n >> m)) return 0;
+
+    vector<P> a, b;
+    a.reserve(static_cast<size_t>(max(0, n)) * 2);
+    b.reserve(static_cast<size_t>(max(0, m)) * 2);
+
+    int x1, y1, x2, y2;
+
+    for (int i = 0; i < n; i++) {
+        cin >> x1 >> y1 >> x2 >> y2;
+        a.push_back({x1, y1});
+        a.push_back({x2, y2});
+    }
+
+    for (int i = 0; i < m; i++) {
+        cin >> x1 >> y1 >> x2 >> y2;
+        b.push_back({x1, y1});
+        b.push_back({x2, y2});
+    }
+
+    string t;
+    cin >> t;
+
+    flip(a, t);
+
+    int a1, a2, a3, a4;
+    int b1, b2, b3, b4;
+
+    if (!box(a, a1, a2, a3, a4) || !box(b, b1, b2, b3, b4)) {
+        cout << "NO";
+        return 0;
+    }
+
+    int lx = max(a1, b1);
+    int rx = min(a2, b2);
+    int ly = max(a3, b3);
+    int ry = min(a4, b4);
+
+    if (lx < rx && ly < ry) {
+        cout << "YES\n";
+        long long area = 1LL * (rx - lx) * (ry - ly);
+        cout << area;
+    } else {
+        cout << "NO";
+    }
+
+    return 0;
+}
+
+// at hidden test case getting wrong answers and compiler 
+// please make sure clear them and give me correct code 
+
+/*Flip ImageMarks: 30
+Problem Description
+Vijay, a grade 6 student, shows interest in many subjects, but he consistently struggles with mathematics - especially geometry. With his exam approaching, his mother grows concerned about his preparation and aims to strengthen his understanding, check his visualization skills, and build his interest by using simple, visually oriented problems.
+
+For one activity, she gives Vijay a Cartesian coordinate graph containing two closed figures made only of horizontal and vertical lines. Each figure lies entirely within a single quadrant and does not cross into another.
+
+Vijay must mentally transform the first figure by creating either its mirror image or its water image. He then compares the transformed figure with the second figure on the graph. If the two overlap, he must calculate the area of the overlapping region.
+
+Vijay must follow these transformation rules:
+
+Mirror Image:
+
+A figure in Quadrant I -> mirror image in Quadrant II
+Quadrant II -> Quadrant I
+Quadrant III -> Quadrant IV
+Quadrant IV -> Quadrant III
+Water Image:
+
+A figure in Quadrant I -> mirror image in Quadrant IV
+Quadrant II -> Quadrant III
+Quadrant III -> Quadrant II
+Quadrant IV -> Quadrant I
+Help Vijay to come up with the solution.
+
+Constraints
+4 <= N, M <= 12
+
+Input
+The first line contains two space-separated integers, N and M, representing the number of straight lines in first and second figure respectively.
+
+Lines 2 to N+1 each contain four integers: X1, Y1, X2, Y2, representing the endpoints of edges in the first figure.
+
+Lines N+2 to N+1+M contain four space-separated integers: X1, Y1, X2, Y2, representing the endpoints of edges in the second figure.
+
+The last line contains the string {mirror | water}, which specifies the reflection to be performed on the initial figure.
+
+Output
+"YES / NO" indicating whether the reflected image of the initial figure overlaps with the second figure.
+
+<integer> specifying the area of overlap if and only if the reflection overlaps with the second figure.
+
+Time Limit (secs)
+1
+
+Examples
+Example 1
+
+Input
+
+4 4
+
+-1 3 -4 3
+
+-1 1 -4 1
+
+-1 3 -1 1
+
+-4 3 -4 1
+
+4 3 5 3
+
+4 4 4 3
+
+5 4 5 3
+
+4 4 5 4
+
+mirror
+
+Output
+
+NO
+
+Explanation
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@5f84abe8:image1.png
+
+The first figure is outlined with green border whereas the second figure is outlined with blue border. The reflection of the first figure is outline with dotted border. By the visuals above, it can be clearly seen that the reflection of the first figure does not overlap the second figure, hence the answer - NO.
+
+Example 2
+
+Input
+
+4 4
+
+-7 1 -2 1
+
+-7 3 -2 3
+
+-7 1 -7 3
+
+-2 1 -2 3
+
+-3 -2 -1 -2
+
+-3 -4 -1 -4
+
+-3 -2 -3 -4
+
+-1 -2 -1 -4
+
+water
+
+Output
+
+YES
+
+1
+
+Explanation
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@5f84abe8:image2.png
+
+The first figure is outlined with green border whereas the second figure is outlined with blue border. The reflection of the first figure is outline with dotted border. By the visuals above, it can be clearly seen that the reflection of the first figure overlaps the second figure for 1 square unit. Hence, the answer.*/
