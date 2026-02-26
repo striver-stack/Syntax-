@@ -1,0 +1,186 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+map<string,char> mp;
+
+string g(vector<string>& a,int p){
+    string s="";
+    for(int i=0;i<3;i++)
+        for(int j=0;j<3;j++)
+            s+=a[i][p*3+j];
+    return s;
+}
+
+long long calc(vector<string> &tok,string pr){
+    vector<string> t=tok;
+    for(char op:pr){
+        for(int i=0;i<t.size();){
+            if(t[i]==string(1,op)){
+                long long x=stoll(t[i-1]);
+                long long y=stoll(t[i+1]);
+                long long z=0;
+                if(op=='+') z=x+y;
+                if(op=='-') z=x-y;
+                if(op=='*') z=x*y;
+                if(op=='/') z=x/y;
+                t[i-1]=to_string(z);
+                t.erase(t.begin()+i,t.begin()+i+2);
+            }else i++;
+        }
+    }
+    return stoll(t[0]);
+}
+
+int main(){
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    mp[" _ | ||_|"]= '0';
+    mp["     |  |"]= '1';
+    mp[" _  _||_ "]= '2';
+    mp[" _  _| _|"]= '3';
+    mp["   |_|  |"]= '4';
+    mp[" _ |_  _|"]= '5';
+    mp[" _ |_ |_|"]= '6';
+    mp[" _   |  |"]= '7';
+    mp[" _ |_||_|"]= '8';
+    mp[" _ |_| _|"]= '9';
+    mp["     _  "]='+';
+    mp["    _   "]='-';
+    mp[" _ |_| _"]='*';
+    mp["   | _ |"]='/';
+    mp[" _ |  | "]='[';
+    mp[" _  | | "] =']';
+
+    int n; cin>>n;
+    vector<string> a(3);
+    cin.ignore();
+    for(int i=0;i<3;i++) getline(cin,a[i]);
+
+    string pr; cin>>pr;
+
+    int f; cin>>f;
+    map<int,set<int>> fix;
+    while(f--){
+        string s; cin>>s;
+        int p=s[0]-'0'-1;
+        for(int i=1;i<s.size();i++)
+            fix[p].insert(s[i]-'A');
+    }
+
+    int l; cin>>l;
+    map<int,vector<vector<int>>> link;
+    while(l--){
+        string s; cin>>s;
+        int p=s[0]-'0'-1;
+        vector<int> v;
+        for(int i=1;i<s.size();i++)
+            v.push_back(s[i]-'A');
+        link[p].push_back(v);
+    }
+
+    vector<string> tok;
+    for(int i=0;i<n;i++){
+        string s=g(a,i);
+        if(!mp.count(s)) return 0;
+        tok.push_back(string(1,mp[s]));
+    }
+
+    long long ans=0;
+
+    for(int i=0;i<n;i++){
+        string s=g(a,i);
+        for(int j=0;j<9;j++){
+            vector<int> tg={j};
+            for(auto &v:link[i]){
+                if(find(v.begin(),v.end(),j)!=v.end()){
+                    tg=v; break;
+                }
+            }
+            bool ok=1;
+            for(int x:tg)
+                if(fix[i].count(x)) ok=0;
+            if(!ok) continue;
+
+            string t=s;
+            for(int x:tg)
+                t[x]=(t[x]==' ')?'_':' ';
+
+            if(!mp.count(t)) continue;
+
+            vector<string> nt=tok;
+            nt[i]=string(1,mp[t]);
+
+            vector<string> fnt;
+            string cur="";
+            for(string &x:nt){
+                if(isdigit(x[0])) cur+=x;
+                else{
+                    if(cur!="") fnt.push_back(cur);
+                    fnt.push_back(x);
+                    cur="";
+                }
+            }
+            if(cur!="") fnt.push_back(cur);
+
+            long long v=calc(fnt,pr);
+            ans=max(ans,v);
+        }
+    }
+
+    cout<<ans;
+}
+
+// input1:
+// 5
+              
+//   | _|| ||_||_|
+//   |  || ||_|| |
+// +-*/
+// 3
+// 3A
+// 4B
+// 5C
+// 2
+// 2AB
+// 1GD
+// your output1:
+// (nothing)
+// correct output1:
+// 5336
+
+// input2:
+// 11
+//         _      _   _               _ 
+// |_||_|   | _|| | _|| | _|  ||_|| |
+// | ||_| _|  || | _|| |  |  ||_||_|
+// /+-*
+// 2
+// 6HA
+// 2D
+// 2
+// 6HEB
+// 7AB
+// your output2:
+// (nothing)
+// correct output2:
+// 5496
+
+
+// input3:
+// 3
+//  _     _  
+//   | _| _|
+//  _|  |  |
+// +-*/
+// 1
+// 2EB
+// 1
+// 1BH
+// your output2:
+// (nothing)
+// correct output2:
+// 9
+
+
+// please make sure i can get correct answers
