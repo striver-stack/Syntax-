@@ -1,0 +1,215 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+using ld = long double;
+const ld INF = 1e300;
+const ld EPS = 1e-13;
+
+struct Circle {
+    ld x, y, r;
+    ld top() const { return y + r; }
+};
+
+ld height(const Circle &c, ld X) {
+    ld dx = X - c.x;
+    ld t = c.r * c.r - dx * dx;
+    if (t < 0) return -INF;
+    return c.y + sqrtl(max((ld)0, t));
+}
+
+// Integral of upper semicircle
+ld integralCircle(const Circle &c, ld X) {
+    ld dx = X - c.x;
+    ld val = c.r * c.r - dx * dx;
+    if (val < 0) val = 0;
+    ld root = sqrtl(val);
+
+    ld ratio = dx / c.r;
+    ratio = max((ld)-1, min((ld)1, ratio));
+
+    return 0.5L * (dx * root + c.r * c.r * asinl(ratio));
+}
+
+ld segmentArea(const Circle &c, ld L, ld R) {
+    return integralCircle(c, R) - integralCircle(c, L);
+}
+
+ld computeArea(vector<Circle>& a, int i, int j) {
+
+    ld H = min(a[i].top(), a[j].top());
+    if (H <= 0) return 0;
+
+    ld L = a[i].x;
+    ld R = a[j].x;
+
+    if (R - L <= EPS) return 0;
+
+    vector<ld> xs;
+    xs.push_back(L);
+    xs.push_back(R);
+
+    for (int k = i; k <= j; k++) {
+        xs.push_back(a[k].x - a[k].r);
+        xs.push_back(a[k].x + a[k].r);
+    }
+
+    sort(xs.begin(), xs.end());
+    xs.erase(unique(xs.begin(), xs.end(),
+        [](ld A, ld B){ return fabsl(A - B) < 1e-12; }),
+        xs.end());
+
+    ld area = 0;
+
+    for (int k = 0; k + 1 < (int)xs.size(); k++) {
+
+        ld A = max(L, xs[k]);
+        ld B = min(R, xs[k+1]);
+        if (B - A <= EPS) continue;
+
+        ld mid = (A + B) / 2;
+
+        ld bestH = -INF;
+        int best = -1;
+
+        for (int t = i; t <= j; t++) {
+            ld h = height(a[t], mid);
+            if (h <= H + EPS && h > bestH) {
+                bestH = h;
+                best = t;
+            }
+        }
+
+        if (best == -1) continue;
+
+        ld rectangle = (H - a[best].y) * (B - A);
+        ld circleSeg = segmentArea(a[best], A, B);
+
+        area += rectangle - circleSeg;
+    }
+
+    return max((ld)0, area);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin >> n;
+
+    vector<Circle> a(n);
+    for (int i = 0; i < n; i++)
+        cin >> a[i].x >> a[i].y >> a[i].r;
+
+    sort(a.begin(), a.end(), [](const Circle &A, const Circle &B) {
+        if (fabsl(A.x - B.x) > EPS) return A.x < B.x;
+        return A.top() < B.top();
+    });
+
+    ld ans = 0;
+
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+
+            ld H = min(a[i].top(), a[j].top());
+
+            ld maxMidTop = -INF;
+            for (int k = i + 1; k < j; k++)
+                maxMidTop = max(maxMidTop, a[k].top());
+
+            if (maxMidTop < H - EPS) {
+                ans = max(ans, computeArea(a, i, j));
+            }
+        }
+    }
+
+    cout << fixed << setprecision(2) << (double)ans << "\n";
+    return 0;
+}
+
+// input1:
+// 5
+// 0 0 2
+// 4 0 2
+// 7 0 1
+// 8 0 1
+// 10 0 2
+// your output1:
+// 4.15
+// correct output1:
+// 3.89
+
+// find out missing point and rewrite code
+// please give me a code that passes all the testcases
+
+Pebble DamMarks: 100
+Problem Description
+In rugged terrain, the cross-section of each mountain can be represented as a circular arc positioned above the ground line.
+
+Following periods of substantial rainfall, water accumulates in the valleys (depressions) situated between circular mountain formations referred to as pebbles. Each pebble is represented by a circle defined by its center at coordinates (x, y) and radius r, outlining the profile of the mountainous terrain. The x-axis (y = 0) represents the ground level. In this two-dimensional cross-sectional model, it is assumed that water can flow only along the x-direction in this 2D representation. Additionally, both ends of the terrain are open, allowing water at the far edges of the mountains to drain freely to the ground.
+
+A dam is planned to be constructed across the valley to facilitate water storage. In this context, a valley is defined as the region between the peaks of two pebbles (represented as circles), provided that no peak located between them exceeds the height of these two. When this condition is met, the intersecting area of the circles overlaps, resulting in a continuous surface. The objective is to identify the valley capable of storing the greatest volume of water (i.e., the maximum trapped water) and to report the corresponding area.
+
+Constraints
+2 < N < 20
+
+Input
+First line consists of a single integer representing N, the number of circles representing the mountains
+
+The next N lines consist of three space-separated integers representing (x, y) co-ordinates and radius r.
+
+Output
+A Single value with two decimal values, representing the area of the largest valley.
+
+Time Limit (secs)
+1
+
+Examples
+Example 1
+
+Input
+
+3
+
+0 0 2
+
+4 0 2
+
+7 0 1
+
+Output
+
+1.72
+
+Explanation
+
+Based on the input, three circles represent the mountains. There are two valleys where water accumulation may occur: between x = 0 and x = 4, and between x = 4 and x = 7. The first valley holds the greatest volume of water, with an area measuring 1.72, which is provided as the output.
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@39c11e6c:image1.png
+
+Example 2
+
+Input
+
+5
+
+0 0 2
+
+4 0 2
+
+7 0 1
+
+8 0 1
+
+10 0 2
+
+Output
+
+3.89
+
+Explanation
+
+The configuration of the five circles results in two valleys: one spanning from x = 0 to x = 4, and another extending from x = 4 to x = 10. The second valley has the greatest water-holding capacity, with an area measured at 3.89. Therefore, this is identified as the correct output.
+
+com.tcs.cv.automata.ei.middleware.DocxToHtmlConverter@39c11e6c:image2.png
+
