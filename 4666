@@ -1,0 +1,143 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+using ld = long double;
+const ld INF = 1e300;
+const ld EPS = 1e-13;
+
+struct Circle {
+    ld x, y, r;
+    ld top() const { return y + r; }
+};
+
+ld height(const Circle &c, ld X) {
+    ld dx = X - c.x;
+    ld t = c.r * c.r - dx * dx;
+    if (t < 0) return -INF;
+    return c.y + sqrtl(max((ld)0, t));
+}
+
+// Integral of upper semicircle
+ld integralCircle(const Circle &c, ld X) {
+    ld dx = X - c.x;
+    ld val = c.r * c.r - dx * dx;
+    if (val < 0) val = 0;
+    ld root = sqrtl(val);
+
+    ld ratio = dx / c.r;
+    ratio = max((ld)-1, min((ld)1, ratio));
+
+    return 0.5L * (dx * root + c.r * c.r * asinl(ratio));
+}
+
+ld segmentArea(const Circle &c, ld L, ld R) {
+    return integralCircle(c, R) - integralCircle(c, L);
+}
+
+ld computeArea(vector<Circle>& a, int i, int j) {
+
+    ld H = min(a[i].top(), a[j].top());
+    if (H <= 0) return 0;
+
+    ld L = a[i].x;
+    ld R = a[j].x;
+
+    if (R - L <= EPS) return 0;
+
+    vector<ld> xs;
+    xs.push_back(L);
+    xs.push_back(R);
+
+    for (int k = i; k <= j; k++) {
+        xs.push_back(a[k].x - a[k].r);
+        xs.push_back(a[k].x + a[k].r);
+    }
+
+    sort(xs.begin(), xs.end());
+    xs.erase(unique(xs.begin(), xs.end(),
+        [](ld A, ld B){ return fabsl(A - B) < 1e-12; }),
+        xs.end());
+
+    ld area = 0;
+
+    for (int k = 0; k + 1 < (int)xs.size(); k++) {
+
+        ld A = max(L, xs[k]);
+        ld B = min(R, xs[k+1]);
+        if (B - A <= EPS) continue;
+
+        ld mid = (A + B) / 2;
+
+        ld bestH = -INF;
+        int best = -1;
+
+        for (int t = i; t <= j; t++) {
+            ld h = height(a[t], mid);
+            if (h <= H + EPS && h > bestH) {
+                bestH = h;
+                best = t;
+            }
+        }
+
+        if (best == -1) continue;
+
+        ld rectangle = (H - a[best].y) * (B - A);
+        ld circleSeg = segmentArea(a[best], A, B);
+
+        area += rectangle - circleSeg;
+    }
+
+    return max((ld)0, area);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin >> n;
+
+    vector<Circle> a(n);
+    for (int i = 0; i < n; i++)
+        cin >> a[i].x >> a[i].y >> a[i].r;
+
+    sort(a.begin(), a.end(), [](const Circle &A, const Circle &B) {
+        if (fabsl(A.x - B.x) > EPS) return A.x < B.x;
+        return A.top() < B.top();
+    });
+
+    ld ans = 0;
+
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+
+            ld H = min(a[i].top(), a[j].top());
+
+            ld maxMidTop = -INF;
+            for (int k = i + 1; k < j; k++)
+                maxMidTop = max(maxMidTop, a[k].top());
+
+            if (maxMidTop < H - EPS) {
+                ans = max(ans, computeArea(a, i, j));
+            }
+        }
+    }
+
+    cout << fixed << setprecision(2) << (double)ans << "\n";
+    return 0;
+}
+
+// input1:
+// 5
+// 0 0 2
+// 4 0 2
+// 7 0 1
+// 8 0 1
+// 10 0 2
+// your output1:
+// 4.15
+// correct output1:
+// 3.89
+
+// find out missing point and rewrite code
+// please give me a code that passes all the testcases
